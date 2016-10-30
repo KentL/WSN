@@ -1,0 +1,5 @@
+BUILD_EXTRA_DEPS=PCRResultMsg.class
+PCRResultMsg.class:PCRResultMsg.java
+	javac PCRResultMsg.java
+PCRResultMsg.java:
+	mig java -target=null -java-classname=PCRResultMsg PCRTest.h PCRResultMsg -o $@

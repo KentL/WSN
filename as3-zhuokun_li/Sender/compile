@@ -1,0 +1,1 @@
+make telosb install,$1 bsl,/dev/ttyUSB0

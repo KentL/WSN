@@ -1,0 +1,2 @@
+javac SensorsMonitor.java
+java SensorsMonitor -comm serial@/dev/ttyUSB0:telosb 6
