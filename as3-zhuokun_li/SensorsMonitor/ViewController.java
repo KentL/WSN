@@ -39,28 +39,20 @@ public class ViewController implements DataSubscriber {
         }, TIMER_FREQ_MS, TIMER_FREQ_MS);
     }
     
-    public void handleData(MoteViewMsg msg) {
+    public void handleData(PCRResultMsg msg) {
         System.out.println("Data updated");
         int nodeId=msg.get_nodeid();
+        int rate = msg.get_rate();
         
         sensorLastUpdateTimeDict.put(nodeId,new Date());
         
         SensorDataPanel sensorDataPanel = window.getSensorDataPanel(nodeId);
         if (sensorDataPanel == null)
             sensorDataPanel = window.addSensorPanel(nodeId);
-        int count = msg.get_counter();
-        int light = msg.get_light();
-        int humidity= msg.get_humidity();
-        int temp = msg.get_temperature();
-        int vol=msg.get_voltage();
 
         NumberFormat formatter = new DecimalFormat("#0.00"); 
         sensorDataPanel.setNodeIdTxt(nodeId+"");
-        sensorDataPanel.setCountTxt(count+"");
-        sensorDataPanel.setHumidityTxt(formatter.format(UnitConvertor.convertHumidity(humidity))+"");
-        sensorDataPanel.setTemperatureTxt(formatter.format(UnitConvertor.convertTemp(temp))+"");
-        sensorDataPanel.setVoltageTxt(formatter.format(UnitConvertor.convertVoltage(vol))+"");
-        sensorDataPanel.setLightTxt(formatter.format(UnitConvertor.convertLight(light))+"");
+        sensorDataPanel.setRateTxt(rate+"");
 
         window.update();
     }

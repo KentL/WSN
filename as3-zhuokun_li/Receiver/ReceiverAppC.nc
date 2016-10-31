@@ -1,4 +1,5 @@
 #include "../share/PCRTest.h"
+#include "StorageVolumes.h"
 
 configuration ReceiverAppC{
 	
@@ -8,7 +9,7 @@ implementation{
 	components MainC;
 	components ReceiverC as App;
   	components LedsC;
-	components new LogStorageC(RECEIVER_LOG_VOLUME_ID,TRUE); 
+	components new LogStorageC(VOLUME_RECEIVERLOG,TRUE); 
 	components ActiveMessageC;
 	components UserButtonC;
 	components new TimerMilliC() as Timer;

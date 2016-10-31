@@ -8,12 +8,8 @@ import java.util.Date;
 public class SensorDataPanel extends JPanel {
 
     JTextField nodeIdTxt = new JTextField();
-    JTextField countTxt = new JTextField();
-    JTextField lastUpdateTimeTxt = new JTextField();
-    JTextField temperatureTxt = new JTextField();
-    JTextField humidityTxt = new JTextField();
-    JTextField voltageTxt = new JTextField();
-    JTextField lightTxt = new JTextField();
+    JTextField rateTxt = new JTextField();
+    JTextField lastUpdateTxt = new JTextField();
     
 
     public SensorDataPanel(){
@@ -24,50 +20,29 @@ public class SensorDataPanel extends JPanel {
         this.nodeIdTxt.setText(nodeId);
     }
 
-    public void setCountTxt(String count) {
-        this.countTxt.setText(count);
+    public void setRateTxt(String rate) {
+        this.rateTxt.setText(rate);
     }
 
-    public void setLastUpdateTimeTxt(String lastUpdateTime) {
-        this.lastUpdateTimeTxt.setText(lastUpdateTime);
+    public void setLastUpdateTimeTxt(String lastUpdateTime)
+    {
+        this.lastUpdateTxt.setText(lastUpdateTime);
     }
-
-    public void setTemperatureTxt(String temp) {
-        this.temperatureTxt.setText(temp);
-    }
-
-    public void setHumidityTxt(String humidity) {
-        this.humidityTxt.setText(humidity);
-    }
-
-    public void setVoltageTxt(String voltage) {
-        this.voltageTxt.setText(voltage);
-    }
-
-    public void setLightTxt(String light) {
-        this.lightTxt.setText(light);
-    }
+    
     private void initTextFields(){
         nodeIdTxt.setEditable(false);
-        countTxt.setEditable(false);
-        lastUpdateTimeTxt.setEditable(false);
-        temperatureTxt.setEditable(false);
-        humidityTxt.setEditable(false);
-        voltageTxt.setEditable(false);
-        lightTxt.setEditable(false);
-
+        rateTxt.setEditable(false);
+        lastUpdateTxt.setEditable(false);
     }
     private void addTextFields(){
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
         JLabel[] labels={
-            new JLabel("Node ID:"),new JLabel("Package Count:"),new JLabel("Time to last update:"),
-            new JLabel("Temperature(°C):"),new JLabel("Humidity:"),new JLabel("Voltage(V):"),
-            new JLabel("Light(lx):")
+            new JLabel("Node ID:"),new JLabel("Rate(%):"), new JLabel("Time to last update:")
         };
 
         JTextField[] textFields={
-            nodeIdTxt,countTxt,lastUpdateTimeTxt,temperatureTxt,humidityTxt,voltageTxt,lightTxt
+            nodeIdTxt,rateTxt,lastUpdateTxt
         };
 
        layout.setAutoCreateGaps(true);

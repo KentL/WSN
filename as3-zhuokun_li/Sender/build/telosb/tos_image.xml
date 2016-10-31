@@ -1,13 +1,13 @@
 <tos_image>
   <ident>
-    <timestamp>58166CBFL</timestamp>
-    <deluge_support>no</deluge_support>
-    <hostname>qye-VirtualBox</hostname>
-    <platform>telosb</platform>
-    <username>bobk</username>
-    <userhash>C0C13AFDL</userhash>
     <appname>SenderAppC</appname>
-    <uidhash>4B402725L</uidhash>
+    <platform>telosb</platform>
+    <userhash>C0C13AFDL</userhash>
+    <deluge_support>no</deluge_support>
+    <uidhash>88239979L</uidhash>
+    <hostname>qye-VirtualBox</hostname>
+    <timestamp>58169FC8L</timestamp>
+    <username>bobk</username>
   </ident>
   <image format="ihex">
 :10400000314000391542200175F335D0085A3F4040

@@ -1,4 +1,4 @@
-#include "../share/MoteView.h"
+#include "../share/PCRTest.h"
 
 configuration BaseStationAppC{
 	

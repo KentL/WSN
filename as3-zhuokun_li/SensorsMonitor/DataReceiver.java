@@ -10,7 +10,7 @@ public class DataReceiver implements net.tinyos.message.MessageListener  {
     private MoteIF moteIF;
 
     public DataReceiver(MoteIF moteIF, int amType){
-        MoteViewMsg instance = new MoteViewMsg();
+        PCRResultMsg instance = new PCRResultMsg();
         instance.amTypeSet(amType);
     	this.moteIF=moteIF;
         this.moteIF.registerListener(instance, this);
@@ -19,7 +19,7 @@ public class DataReceiver implements net.tinyos.message.MessageListener  {
         dataSubscribers.add(subscriber);
     }
     public void messageReceived(int to, Message message) {
-        MoteViewMsg msg=(MoteViewMsg)message;
+        PCRResultMsg msg=(PCRResultMsg)message;
         System.out.println(msg.toString());
         for (DataSubscriber subscriber: dataSubscribers ) {
                 subscriber.handleData(msg);
