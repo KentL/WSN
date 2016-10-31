@@ -50,18 +50,14 @@ implementation {
   }
 
   event void SamplingTimer.fired(){
-   call Leds.set(1);
-    
     if(next_hop<0)
     {
-   call Leds.set(2);
       return; //Wait for PathCalc message 
     }
     tempLoaded = FALSE;
     lightLoaded = FALSE;
     humLoaded = FALSE;
     volLoaded = FALSE;
-   call Leds.set(3);
 
     call VoltageRead.read();
     call LightRead.read();
@@ -106,17 +102,14 @@ implementation {
   
 	void trySendOwnData(){
   
-    //call Leds.set(1);
 		if(!busy)
     {
-    //call Leds.set(2);
       if(tempLoaded && lightLoaded && humLoaded && volLoaded){
         message_t pkt;
         MoteViewMsg* mvpkt = (MoteViewMsg*)(call Packet.getPayload( &pkt, sizeof(MoteViewMsg)));
         if (mvpkt == NULL) {
           return;
         }
-    //call Leds.set(3);
         mvpkt->nodeid = TOS_NODE_ID;
         mvpkt->counter = counter;
         mvpkt->temperature=temp;

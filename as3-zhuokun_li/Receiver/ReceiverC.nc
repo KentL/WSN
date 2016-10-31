@@ -12,7 +12,6 @@ module ReceiverC {
     interface LogWrite;
     interface Packet;
     interface Notify<button_state_t>;
-    interface Timer<TMilli>;
   }
 }
 
@@ -23,7 +22,7 @@ implementation {
   message_t pkt;
   PCRResultMsg* result_msg;
   bool timer_first_tick=TRUE;
-  bool log_ready=FALSE;
+  bool log_done=FALSE;
   PCRResultMsg pcr_result;
 
 	event void Boot.booted() {
@@ -37,20 +36,38 @@ implementation {
     }
   }
 
+  void enter_log_mode()
+  {
+      mode = RECEIVER_MODE_LOG;
+      call Leds.set(1); // Turn red light on
+      call LogWrite.erase(); // Clear previous log, then log this result
+  }
+
+  void enter_offload_mode()
+  {
+      mode = RECEIVER_MODE_OFFLOAD;
+      call Leds.set(4); //Turn blue light on
+      while(!log_done);
+      if(log_done)
+      {
+          result_msg = (PCRResultMsg*)(call Packet.getPayload( &pkt, sizeof(PCRResultMsg)));
+          call LogRead.read(result_msg, sizeof(PCRResultMsg));
+      }
+  }
   event void Notify.notify( button_state_t state ) {
      if ( state == BUTTON_PRESSED)
      {
-        mode = RECEIVER_MODE_LOG;
-        call Leds.set(1); // Turn red light on
-        call LogWrite.erase(); // Clear previous log, then log this result
+        if(mode == RECEIVER_MODE_LISTEN)
+        {
+          enter_log_mode();
+        }
+        else if(mode == RECEIVER_MODE_LOG)
+        {
+          enter_offload_mode();
+        }
      } 
-     else if ( state == BUTTON_RELEASED)
-     {
-        mode = RECEIVER_MODE_OFFLOAD;
-        call Leds.set(4); //Turn blue light on
-        call Timer.startPeriodic(1000); //Wait for 1 second then send result to base station
-     }
   }
+
 
   event void LogWrite.eraseDone(error_t result) 
   {
@@ -60,19 +77,7 @@ implementation {
       pcr_result.rate = rate;
       call LogWrite.append(&pcr_result, sizeof(PCRResultMsg));
   }
-  event void Timer.fired(){
-      if(timer_first_tick)
-      {
-        timer_first_tick=FALSE;
-        return;
-      }
-      if(log_ready)
-      {
-          result_msg = (PCRResultMsg*)(call Packet.getPayload( &pkt, sizeof(PCRResultMsg)));
-          call LogRead.read(result_msg, sizeof(PCRResultMsg));
-          call Timer.stop();
-      }
-  }
+  
   event void LogRead.readDone(void* buf, storage_len_t len, error_t err) {
       if ( (len == sizeof(PCRResultMsg)) && (buf == result_msg) ) {
         call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(PCRResultMsg));
@@ -94,7 +99,7 @@ implementation {
   event void AMRadioControl.stopDone(error_t err) {}
   event void LogWrite.appendDone(void* buf, storage_len_t len,bool recordsLost, error_t err) 
   {
-    log_ready=TRUE;
+    log_done=TRUE;
   }
   event void AMSend.sendDone(message_t* msg, error_t err) {}
 

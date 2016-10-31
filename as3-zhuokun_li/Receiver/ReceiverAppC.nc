@@ -12,7 +12,6 @@ implementation{
 	components new LogStorageC(VOLUME_RECEIVERLOG,TRUE); 
 	components ActiveMessageC;
 	components UserButtonC;
-	components new TimerMilliC() as Timer;
 
 	App.Boot -> MainC;
 	App.Leds -> LedsC;
@@ -22,6 +21,5 @@ implementation{
   	App.LogRead->LogStorageC;
   	App.LogWrite->LogStorageC;
   	App.Notify->UserButtonC;
-  	App.Timer->Timer;
 	App.Packet -> ActiveMessageC.Packet;
 }
