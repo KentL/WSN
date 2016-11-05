@@ -26,7 +26,8 @@ implementation {
 	bool lightLoaded = FALSE;
 	bool humLoaded = FALSE;
 	bool volLoaded = FALSE;
-	bool busy = FALSE;
+  bool mote_view_sender_busy = FALSE;
+	bool path_calc_sender_busy = FALSE;
 
   uint16_t temp;
   uint16_t light;
@@ -39,19 +40,42 @@ implementation {
   uint8_t address;
   int16_t next_hop=-1;
 
+  message_t mote_view_pkt;
+  message_t path_calc_pkt;
+  MoteViewMsg* mote_view_msg;
+  PathCalcMsg* path_calc_msg;
+
   void trySendOwnData();
   void transferPacket(MoteViewMsg* msg);
-  void forwardPathCalcMsg(PathCalcMsg* msg);
+  void forwardPathCalcMsg(PathCalcMsg* msg, uint8_t new_address, uint8_t new_hop_count);
 
   event void Boot.booted() {
     call AMControl.start();
     call InvalidPathTimer.startPeriodic(PATH_INVALID_FREQUENCY); 
     address = call AMPacket.address();
+
+    
+    mote_view_msg = (MoteViewMsg*)(call Packet.getPayload( &mote_view_pkt, sizeof(MoteViewMsg)));
+    path_calc_msg = (PathCalcMsg*)(call Packet.getPayload( &path_calc_pkt, sizeof(PathCalcMsg)));
+    if (mote_view_msg == NULL || path_calc_msg == NULL) 
+    {
+      return;
+    }
   }
 
   event void SamplingTimer.fired(){
     if(next_hop<0)
     {
+      if(ledNum == 0)
+      {
+        call Leds.set(6);
+        ledNum=next_hop;
+      }
+      else 
+      {
+        call Leds.set(0);
+        ledNum=0;
+      }
       return; //Wait for PathCalc message 
     }
     tempLoaded = FALSE;
@@ -92,76 +116,66 @@ implementation {
             }
           }
           if(forward){
-            msg->path[hop_count]=address;
-            msg->hop_count=hop_count+1;
-            forwardPathCalcMsg(msg);
+            forwardPathCalcMsg(msg,address,hop_count+1);
           }
       }
       return message;
     }
   
 	void trySendOwnData(){
-  
-		if(!busy)
-    {
-      if(tempLoaded && lightLoaded && humLoaded && volLoaded){
-        message_t pkt;
-        MoteViewMsg* mvpkt = (MoteViewMsg*)(call Packet.getPayload( &pkt, sizeof(MoteViewMsg)));
-        if (mvpkt == NULL) {
-          return;
-        }
-        mvpkt->nodeid = TOS_NODE_ID;
-        mvpkt->counter = counter;
-        mvpkt->temperature=temp;
-        mvpkt->humidity=hum;
-        mvpkt->light=light;
-        mvpkt->voltage=voltage;
-				if (call AMMoteViewMsgSend.send(next_hop, &pkt, sizeof(MoteViewMsg)) == SUCCESS) 
-				{
-        		busy = TRUE;
-				}
-			}
-		}
-    
-    
-	}
+	    if(tempLoaded && lightLoaded && humLoaded && volLoaded)
+	    {
+          if(!mote_view_sender_busy && next_hop>0)
+          {
+    	        
+    	        mote_view_msg->nodeid = TOS_NODE_ID;
+    	        mote_view_msg->counter = counter;
+    	        mote_view_msg->temperature=temp;
+    	        mote_view_msg->humidity=hum;
+    	        mote_view_msg->light=light;
+    	        mote_view_msg->voltage=voltage;
+
+      				if (call AMMoteViewMsgSend.send(next_hop, &mote_view_pkt, sizeof(MoteViewMsg)) == SUCCESS) 
+      				{
+      					mote_view_sender_busy = TRUE;
+      				}
+  			  }
+		  }
+	 }
 
   void transferPacket(MoteViewMsg* msg){
-    if(!busy)
+    if(!mote_view_sender_busy)
     {
-      message_t pkt;
-      MoteViewMsg* mvpkt = (MoteViewMsg*)(call Packet.getPayload( &pkt, sizeof(MoteViewMsg)));
-      if (mvpkt == NULL) {
-        return;
-      }
-      mvpkt->nodeid = msg->nodeid;
-      mvpkt->counter = msg->counter;
-      mvpkt->voltage = msg->voltage;
-      mvpkt->temperature = msg->temperature;
-      mvpkt->humidity = msg->humidity;
-      mvpkt->light = msg->light;
+      mote_view_msg->nodeid = msg->nodeid;
+      mote_view_msg->counter = msg->counter;
+      mote_view_msg->voltage = msg->voltage;
+      mote_view_msg->temperature = msg->temperature;
+      mote_view_msg->humidity = msg->humidity;
+      mote_view_msg->light = msg->light;
 
-      if (call AMMoteViewMsgSend.send(next_hop, &pkt, sizeof(MoteViewMsg)) == SUCCESS) 
+      if (call AMMoteViewMsgSend.send(next_hop, &mote_view_pkt, sizeof(MoteViewMsg)) == SUCCESS) 
       {
-          busy = TRUE;
+          mote_view_sender_busy = TRUE;
       }
     }
   }
 
-  void forwardPathCalcMsg(PathCalcMsg* msg){
-    message_t pkt;
-    uint16_t i=0;
-    PathCalcMsg* snd_msg = (PathCalcMsg*)(call Packet.getPayload( &pkt, sizeof(PathCalcMsg)));
-    while(i<msg->hop_count){
-      snd_msg->path[i]=msg->path[i];
-      i++;
-    }
-    
-    snd_msg->type=msg->type;
-    snd_msg->hop_count=msg->hop_count;
-    
-    if (call AMPathCalcMsgSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(PathCalcMsg)) == SUCCESS) 
+  void forwardPathCalcMsg(PathCalcMsg* msg, uint8_t new_address, uint8_t new_hop_count){
+    if(!path_calc_sender_busy)
     {
+      uint16_t i=0;
+      while(i<msg->hop_count){
+        path_calc_msg->path[i]=msg->path[i];
+        i++;
+      }
+      path_calc_msg->type=msg->type;
+      path_calc_msg->hop_count=new_hop_count;
+      path_calc_msg->path[new_hop_count]=new_address;
+      
+      if (call AMPathCalcMsgSend.send(AM_BROADCAST_ADDR, &path_calc_pkt, sizeof(PathCalcMsg)) == SUCCESS) 
+      {
+        path_calc_sender_busy=TRUE;
+      }
     }
   }
 	
@@ -213,19 +227,20 @@ implementation {
 	
 	event void AMMoteViewMsgSend.sendDone(message_t* msg, error_t err) {
       counter++;
-      busy = FALSE;
+      mote_view_sender_busy = FALSE;
       if(ledNum == 0)
       {
-        //call Leds.set(next_hop);
-        //ledNum=next_hop;
+        call Leds.set(next_hop);
+        ledNum=next_hop;
       }
       else 
       {
-        //call Leds.set(0);
-        //ledNum=0;
+        call Leds.set(0);
+        ledNum=0;
       }
   }
   event void AMPathCalcMsgSend.sendDone(message_t* msg, error_t err) {
+    path_calc_sender_busy=FALSE;
   }
   event void AMControl.stopDone(error_t err) {}
 }

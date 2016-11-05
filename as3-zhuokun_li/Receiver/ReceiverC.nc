@@ -12,6 +12,7 @@ module ReceiverC {
     interface LogWrite;
     interface Packet;
     interface Notify<button_state_t>;
+    interface Timer<TMilli>;
   }
 }
 
@@ -21,9 +22,10 @@ implementation {
   uint8_t mode= RECEIVER_MODE_LISTEN;
   message_t pkt;
   PCRResultMsg* result_msg;
-  bool timer_first_tick=TRUE;
+  PCRResultMsg logged_result;
   bool log_done=FALSE;
   PCRResultMsg pcr_result;
+  bool busy=FALSE;
 
 	event void Boot.booted() {
     call AMRadioControl.start();
@@ -42,16 +44,23 @@ implementation {
       call Leds.set(1); // Turn red light on
       call LogWrite.erase(); // Clear previous log, then log this result
   }
-
+  event void Timer.fired()
+  {
+    if(!busy)
+    {
+      call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(PCRResultMsg));
+      busy=TRUE;
+    }
+  }
   void enter_offload_mode()
   {
-      mode = RECEIVER_MODE_OFFLOAD;
-      call Leds.set(4); //Turn blue light on
-      while(!log_done);
       if(log_done)
       {
-          result_msg = (PCRResultMsg*)(call Packet.getPayload( &pkt, sizeof(PCRResultMsg)));
-          call LogRead.read(result_msg, sizeof(PCRResultMsg));
+        mode = RECEIVER_MODE_OFFLOAD;
+        call Leds.set(4); //Turn blue light on
+      
+        result_msg = (PCRResultMsg*)(call Packet.getPayload( &pkt, sizeof(PCRResultMsg)));
+        call LogRead.read(&logged_result, sizeof(PCRResultMsg));
       }
   }
   event void Notify.notify( button_state_t state ) {
@@ -79,8 +88,10 @@ implementation {
   }
   
   event void LogRead.readDone(void* buf, storage_len_t len, error_t err) {
-      if ( (len == sizeof(PCRResultMsg)) && (buf == result_msg) ) {
-        call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(PCRResultMsg));
+      if ( (len == sizeof(PCRResultMsg)) && (buf == &logged_result) ) {
+        result_msg->nodeid = logged_result.nodeid;
+        result_msg->rate = logged_result.rate;
+        call Timer.startPeriodic(SENDING_FREQUENCY);
       }
   }
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
@@ -100,8 +111,11 @@ implementation {
   event void LogWrite.appendDone(void* buf, storage_len_t len,bool recordsLost, error_t err) 
   {
     log_done=TRUE;
+    call Leds.set(7);
   }
-  event void AMSend.sendDone(message_t* msg, error_t err) {}
+  event void AMSend.sendDone(message_t* msg, error_t err) {
+    busy=FALSE;
+  }
 
   event void LogRead.seekDone(error_t err) {}
   event void LogWrite.syncDone(error_t err) {}

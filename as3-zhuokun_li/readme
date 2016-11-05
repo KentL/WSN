@@ -1,14 +1,20 @@
 This package contains 3 main projecs: 
 	1.BaseStation: the tinyos program for the BaseStation node
-	2.MoteView: the tinyos program for the Sender node
+	2.Sender: the tinyos program for the Sender node
+	3.Receiver: the tinyos program for the Receiver node
 	3.SensorMonitor: the java program runs on PC to show the sensor data.
 
 This package also contains a "share" folder which contains files shared by "BaseStation" and "MoteView" project.
 
 To install&run:
-	1.BaseStation & MoteView: Connect sensor node to usb port, then run the "compile" script in this two folders
+	1.BaseStation, Sender & Receiver: Connect sensor node to usb port, then run the "compile" script in this two folders
 	2.SensorMonitor:
 		Require Java 1.6+
 		Run the "make" script in project folder
 		Connect BaseStation node to PC 
 		Run the "run" script in project folder
+
+To Test Reception Rate:
+	1.Plug in the BaseStation node and run SensorMonitor program on PC.
+	2.Reset receiver node and put it close to BaseStation node.
+	3.Move Sender node around and then press Reset button. You will see both Receiver and Sender is blinking their green lights. When Sender's red light is on, it means it finished sending. Then press the User button on Receiver. Receiver's red light is on and it is logging the data to flash. Wait until Receiver's 3 lights are all up which indicates it finished logging. Then press the User button again to send the rate to BaseStation.

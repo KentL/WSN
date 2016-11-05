@@ -16,6 +16,6 @@ implementation{
 	App.AMRadioControl -> ActiveMessageC;
 	App.AMSerialControl -> SerialActiveMessageC;
 	App.SerialSend->SerialActiveMessageC.AMSend[AM_PCR_RESULT_MSG];
-  	App.RadioReceive -> ActiveMessageC.Receive[AM_PCR_RESULT_MSG];
+  	App.Receive -> ActiveMessageC.Receive[AM_PCR_RESULT_MSG];
   	App.SerialPacket->SerialActiveMessageC;
 }

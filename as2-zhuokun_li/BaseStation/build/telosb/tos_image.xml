@@ -1,13 +1,13 @@
 <tos_image>
   <ident>
-    <userhash>C0C13AFDL</userhash>
-    <username>bobk</username>
     <hostname>qye-VirtualBox</hostname>
-    <timestamp>58128330L</timestamp>
-    <appname>BaseStationAppC</appname>
-    <uidhash>330F267EL</uidhash>
-    <platform>telosb</platform>
+    <username>bobk</username>
     <deluge_support>no</deluge_support>
+    <timestamp>581A97B9L</timestamp>
+    <uidhash>889F0C11L</uidhash>
+    <platform>telosb</platform>
+    <userhash>C0C13AFDL</userhash>
+    <appname>BaseStationAppC</appname>
   </ident>
   <image format="ihex">
 :10400000314000391542200175F335D0085A3F4040

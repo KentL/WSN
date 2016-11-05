@@ -7,7 +7,7 @@ module BaseStationC {
    	interface Leds;
     interface SplitControl as AMRadioControl;
   	interface SplitControl as AMSerialControl;
-    interface Receive as RadioReceive;
+    interface Receive;
     interface AMSend as SerialSend;
     interface Packet as SerialPacket;
   }
@@ -15,7 +15,7 @@ module BaseStationC {
 
 implementation {
   message_t serialPkt;
-
+  int count=0;
 	event void Boot.booted() {
     call AMRadioControl.start();
 		call AMSerialControl.start();
@@ -33,26 +33,28 @@ implementation {
     }
   }
 
-  event message_t* RadioReceive.receive(message_t* msg, void* payload, uint8_t len){
+  event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
     if (len == sizeof(PCRResultMsg)) {
       PCRResultMsg* rcvPkt = (PCRResultMsg*)payload;
       PCRResultMsg* sndPkg = (PCRResultMsg*)call SerialPacket.getPayload(&serialPkt, sizeof(PCRResultMsg));
       
+      call Leds.set(6);
       //Construct new packet
       if (sndPkg != NULL && call SerialPacket.maxPayloadLength() >= sizeof(PCRResultMsg))
       {
         sndPkg->nodeid = rcvPkt->nodeid;
         sndPkg->rate = rcvPkt->rate;
         
+        call Leds.set(4);
         //Send packet to serial port
         if (call SerialSend.send(AM_BROADCAST_ADDR, &serialPkt, sizeof(PCRResultMsg)) == SUCCESS) 
         {
-          call Leds.set(rcvPkt->nodeid);
+          count++;
+          call Leds.set(count);
         }else{
-          call Leds.set(0);
+          call Leds.set(7);
         }
       }
-      
     }
     return msg;
   }	

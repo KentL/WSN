@@ -1,12 +1,12 @@
 <tos_image>
   <ident>
-    <userhash>C0C13AFDL</userhash>
-    <platform>telosb</platform>
-    <timestamp>5812836FL</timestamp>
-    <deluge_support>no</deluge_support>
     <appname>MoteViewAppC</appname>
-    <uidhash>A6FF6337L</uidhash>
+    <platform>telosb</platform>
+    <userhash>C0C13AFDL</userhash>
     <hostname>qye-VirtualBox</hostname>
+    <timestamp>581A885EL</timestamp>
+    <deluge_support>no</deluge_support>
+    <uidhash>C6978CB1L</uidhash>
     <username>bobk</username>
   </ident>
   <image format="ihex">

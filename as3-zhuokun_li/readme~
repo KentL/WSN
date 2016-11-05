@@ -1,0 +1,15 @@
+This package contains 3 main projecs: 
+	1.BaseStation: the tinyos program for the BaseStation node
+	2.Sender: the tinyos program for the Sender node
+	3.Receiver: the tinyos program for the Receiver node
+	3.SensorMonitor: the java program runs on PC to show the sensor data.
+
+This package also contains a "share" folder which contains files shared by "BaseStation" and "MoteView" project.
+
+To install&run:
+	1.BaseStation, Sender & Receiver: Connect sensor node to usb port, then run the "compile" script in this two folders
+	2.SensorMonitor:
+		Require Java 1.6+
+		Run the "make" script in project folder
+		Connect BaseStation node to PC 
+		Run the "run" script in project folder
